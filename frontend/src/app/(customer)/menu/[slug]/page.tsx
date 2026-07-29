@@ -43,7 +43,9 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   const [selection, setSelection] = useState<Record<number, number[]>>({});
   const [activeImage, setActiveImage] = useState(0);
 
-  const groups = product?.option_groups ?? [];
+  // Memoised so the identity is stable — a fresh `[]` on every render would
+  // re-run every downstream memo that depends on it.
+  const groups = useMemo(() => product?.option_groups ?? [], [product]);
 
   // Preselect every group's default, so a required "Single patty" is already
   // chosen and the customer can add to cart in one tap.

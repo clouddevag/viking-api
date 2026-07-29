@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { Save } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/admin/data-table";
@@ -29,22 +29,27 @@ export default function AdminSettingsPage() {
   const { data, isLoading } = useAdminSettings();
   const { data: branches } = useAdminBranches();
 
-  const [draft, setDraft] = useState<Record<string, unknown>>({});
+  const [edits, setEdits] = useState<Record<string, unknown>>({});
   const [busy, setBusy] = useState(false);
 
-  // Seed the draft once the server values arrive; edits then live locally
-  // until saved, so a slow connection cannot clobber typing.
-  useEffect(() => {
-    if (!data) return;
+  // The server values are derived from the query rather than copied into
+  // state. Re-seeding a draft from an effect would wipe half-typed edits every
+  // time the query refetched in the background; overlaying the edits instead
+  // means a background refresh updates untouched fields and leaves the rest.
+  const serverValues = useMemo(() => {
+    const values: Record<string, unknown> = {};
 
-    const initial: Record<string, unknown> = {};
-    Object.values(data).forEach((rows) =>
+    Object.values(data ?? {}).forEach((rows) =>
       (rows as SettingRow[]).forEach((row) => {
-        initial[row.key] = row.value;
+        values[row.key] = row.value;
       }),
     );
-    setDraft(initial);
+
+    return values;
   }, [data]);
+
+  const draft = useMemo(() => ({ ...serverValues, ...edits }), [serverValues, edits]);
+  const setDraft = setEdits;
 
   const save = async () => {
     setBusy(true);
@@ -54,6 +59,8 @@ export default function AdminSettingsPage() {
         Object.entries(draft).map(([key, value]) => ({ key, value })),
       );
       await queryClient.invalidateQueries({ queryKey: ["admin", "settings"] });
+      // The refetched values are now authoritative, so the overlay clears.
+      setEdits({});
       toast.success(t("admin.saved"));
     } catch (error) {
       toast.error(error instanceof ApiRequestError ? error.message : t("state.error"));

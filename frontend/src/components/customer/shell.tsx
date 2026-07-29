@@ -18,8 +18,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { useMounted } from "@/hooks/use-mounted";
 import { useI18n } from "@/lib/i18n/provider";
-import { useAuthStore } from "@/stores/auth";
 import { useCartStore } from "@/stores/cart";
 import { cn } from "@/lib/utils";
 import type { TranslationKey } from "@/lib/i18n/dictionaries";
@@ -113,12 +113,11 @@ function TopBar() {
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const { t } = useI18n();
 
   // The resolved theme is unknown during SSR, so render a placeholder of the
   // same size to avoid a layout shift once it settles.
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   if (!mounted) {
     return <div className="size-10" aria-hidden />;

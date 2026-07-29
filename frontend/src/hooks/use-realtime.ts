@@ -31,8 +31,14 @@ export function useKitchenRealtime(
   onNewOrder?: (order: Order) => void,
 ) {
   const queryClient = useQueryClient();
+  // Held in a ref so a new callback identity does not tear down and rebuild
+  // the websocket subscription on every render. Assigned in an effect, never
+  // during render, so a torn render cannot observe a half-updated ref.
   const onNewOrderRef = useRef(onNewOrder);
-  onNewOrderRef.current = onNewOrder;
+
+  useEffect(() => {
+    onNewOrderRef.current = onNewOrder;
+  }, [onNewOrder]);
 
   useEffect(() => {
     if (!branchId) return;

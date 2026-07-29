@@ -51,8 +51,13 @@ function KitchenBoard() {
     return () => window.clearInterval(timer);
   }, []);
 
+  // The chime callback is memoised so it never re-subscribes the channel, so
+  // it reads the current toggle through a ref rather than closing over it.
   const soundRef = useRef(soundOn);
-  soundRef.current = soundOn;
+
+  useEffect(() => {
+    soundRef.current = soundOn;
+  }, [soundOn]);
 
   const onNewOrder = useCallback(() => {
     if (soundRef.current) playNewOrderChime();

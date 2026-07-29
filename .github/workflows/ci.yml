@@ -81,7 +81,7 @@ jobs:
         run: php artisan migrate:fresh --seed --force
 
   frontend:
-    name: Frontend — typecheck, lint & build
+    name: Frontend — typecheck, lint, test & build
     runs-on: ubuntu-latest
 
     defaults:
@@ -104,6 +104,9 @@ jobs:
 
       - name: Lint
         run: npx eslint .
+
+      - name: Unit tests
+        run: npm run test
 
       - name: Build
         env:

@@ -47,6 +47,7 @@ export const keys = {
   kitchenBoard: (branchId?: number) => ["kitchen", "board", branchId ?? null] as const,
   cashierOrders: (params?: Record<string, unknown>) => ["cashier", "orders", params ?? {}] as const,
   cashierTables: (branchId?: number) => ["cashier", "tables", branchId ?? null] as const,
+  cashierOrder: (orderNumber: string) => ["cashier", "order", orderNumber] as const,
 
   admin: {
     dashboard: (branchId?: number) => ["admin", "dashboard", branchId ?? null] as const,
@@ -305,6 +306,21 @@ export function useCashierOrders(params?: Parameters<typeof cashierApi.orders>[0
     queryFn: () => cashierApi.orders(params),
     refetchInterval: 30_000,
     placeholderData: keepPreviousData,
+  });
+}
+
+/**
+ * A single order with its payments and true outstanding balance.
+ *
+ * Deliberately separate from the list query: the till drawer needs line items
+ * and the payment ledger, which the list row does not carry.
+ */
+export function useCashierOrder(orderNumber: string) {
+  return useQuery({
+    queryKey: keys.cashierOrder(orderNumber),
+    queryFn: () => cashierApi.get(orderNumber),
+    // The balance must be current when money changes hands.
+    staleTime: 0,
   });
 }
 

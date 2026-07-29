@@ -11,14 +11,14 @@ import {
   Search,
   Users,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { StaffGuard, StaffTopBar } from "@/components/staff/shell";
 import { Button } from "@/components/ui/button";
 import { Badge, Card, EmptyState, Field, Input, Skeleton, Textarea } from "@/components/ui/primitives";
 import { Sheet } from "@/components/ui/sheet";
-import { useCashierOrders, useCashierTables } from "@/hooks/queries";
+import { useCashierOrder, useCashierOrders, useCashierTables } from "@/hooks/queries";
 import { useCashierRealtime } from "@/hooks/use-realtime";
 import { cashierApi } from "@/lib/api/endpoints";
 import { ApiRequestError } from "@/lib/api/client";
@@ -333,32 +333,32 @@ function OrderDrawer({
   const { t, locale } = useI18n();
   const can = useAuthStore((state) => state.can);
 
-  const [order, setOrder] = useState<Order | null>(null);
-  const [outstanding, setOutstanding] = useState(0);
   const [mode, setMode] = useState<"pay" | "refund" | "discount">("pay");
   const [method, setMethod] = useState<PaymentMethod>("cash");
   const [tendered, setTendered] = useState("");
-  const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
 
   // Loaded fresh rather than reusing the list row, because the drawer needs
   // items, payments and the true outstanding balance.
-  const load = useCallback(async () => {
-    try {
-      const result = await cashierApi.get(orderNumber);
-      setOrder(result.data);
-      setOutstanding(result.meta.outstanding);
-      setAmount(String(result.meta.outstanding));
-    } catch {
-      toast.error(t("state.error"));
-      onClose();
-    }
-  }, [orderNumber, t, onClose]);
+  const { data, isError, refetch } = useCashierOrder(orderNumber);
+
+  const order = data?.data ?? null;
+  const outstanding = data?.meta.outstanding ?? 0;
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (!isError) return;
+
+    toast.error(t("state.error"));
+    onClose();
+  }, [isError, t, onClose]);
+
+  // The amount box defaults to the balance owed and holds an override only
+  // once the cashier types one, so a refetched balance flows through instead
+  // of being pinned to whatever it was when the drawer opened.
+  const [amountOverride, setAmountOverride] = useState<string | null>(null);
+  const amount = amountOverride ?? String(outstanding);
+  const setAmount = setAmountOverride;
 
   const currency = order?.totals.currency ?? "IQD";
   const tenderedNumber = Number(tendered) || 0;
@@ -391,7 +391,7 @@ function OrderDrawer({
       }
 
       onSettled();
-      await load();
+      await refetch();
       setMode("pay");
       setReason("");
       setTendered("");

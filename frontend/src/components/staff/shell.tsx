@@ -4,9 +4,10 @@ import { Loader2, LogOut, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import { authApi } from "@/lib/api/endpoints";
+import { useMounted } from "@/hooks/use-mounted";
 import { disconnectEcho } from "@/lib/echo";
 import { useI18n } from "@/lib/i18n/provider";
 import { useAuthStore } from "@/stores/auth";
@@ -90,12 +91,10 @@ export function StaffTopBar({
 }) {
   const { t, locale, setLocale } = useI18n();
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const user = useAuthStore((state) => state.user);
   const signOut = useAuthStore((state) => state.signOut);
   const router = useRouter();
-
-  useEffect(() => setMounted(true), []);
 
   const handleSignOut = async () => {
     try {

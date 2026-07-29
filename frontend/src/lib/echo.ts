@@ -18,7 +18,7 @@ type EchoInstance = InstanceType<typeof Echo>;
 let echo: EchoInstance | null = null;
 
 declare global {
-  // eslint-disable-next-line no-var
+  // laravel-echo reads Pusher off the global, so it has to be declared here.
   var Pusher: typeof import("pusher-js").default | undefined;
 }
 

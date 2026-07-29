@@ -47,12 +47,17 @@ export default function AdminReportsPage() {
   const can = useAuthStore((state) => state.can);
   const user = useAuthStore((state) => state.user);
 
-  const today = new Date().toISOString().slice(0, 10);
-  const monthAgo = new Date(Date.now() - 29 * 86_400_000).toISOString().slice(0, 10);
+  // The clock is read once, when the screen opens, rather than on every
+  // render — reading it during render makes the component impure and lets the
+  // date inputs drift under the user across a midnight boundary.
+  const [dateDefaults] = useState(() => ({
+    today: new Date().toISOString().slice(0, 10),
+    monthAgo: new Date(Date.now() - 29 * 86_400_000).toISOString().slice(0, 10),
+  }));
 
   const [report, setReport] = useState("sales");
-  const [from, setFrom] = useState(monthAgo);
-  const [to, setTo] = useState(today);
+  const [from, setFrom] = useState(dateDefaults.monthAgo);
+  const [to, setTo] = useState(dateDefaults.today);
 
   const { data, isLoading } = useReport(report, {
     from,
@@ -155,7 +160,7 @@ export default function AdminReportsPage() {
             dir="ltr"
             value={to}
             min={from}
-            max={today}
+            max={dateDefaults.today}
             onChange={(event) => setTo(event.target.value)}
           />
         </Field>

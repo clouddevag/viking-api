@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, Layers, Plus, Printer, QrCode, RefreshCw } from "lucide-react";
+import { ClipboardList, Layers, Printer, QrCode, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 

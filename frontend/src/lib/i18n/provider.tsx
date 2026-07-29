@@ -6,7 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 
@@ -19,6 +19,42 @@ import {
 } from "./dictionaries";
 
 const STORAGE_KEY = "viking.locale";
+
+/**
+ * The stored locale is external state, so it is read through
+ * `useSyncExternalStore` rather than copied into React state by an effect.
+ * That keeps the server render deterministic (the snapshot is `null`, so the
+ * caller's `initialLocale` wins) and, as a bonus, switching language in one
+ * tab now updates the others.
+ */
+const localeListeners = new Set<() => void>();
+
+function subscribeToLocale(listener: () => void): () => void {
+  localeListeners.add(listener);
+  window.addEventListener("storage", listener);
+
+  return () => {
+    localeListeners.delete(listener);
+    window.removeEventListener("storage", listener);
+  };
+}
+
+/** Returns a primitive, so repeated calls are referentially stable. */
+function readStoredLocale(): Locale | null {
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  return stored === "ar" || stored === "en" ? stored : null;
+}
+
+/** Nothing is stored during SSR, so the caller's default applies. */
+const serverLocale = (): Locale | null => null;
+
+function writeStoredLocale(next: Locale): void {
+  window.localStorage.setItem(STORAGE_KEY, next);
+  // The API returns localized menu content, so it needs to know too.
+  document.cookie = `viking_locale=${next};path=/;max-age=31536000;samesite=lax`;
+  // `storage` does not fire in the tab that wrote it.
+  localeListeners.forEach((listener) => listener());
+}
 
 type Interpolations = Record<string, string | number>;
 
@@ -46,17 +82,8 @@ export function I18nProvider({
   children: ReactNode;
   initialLocale?: Locale;
 }) {
-  const [locale, setLocaleState] = useState<Locale>(initialLocale);
-
-  // Read the stored preference after mount. Doing it during render would
-  // produce different markup on server and client and trip hydration.
-  useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-
-    if (stored === "ar" || stored === "en") {
-      setLocaleState(stored);
-    }
-  }, []);
+  const stored = useSyncExternalStore(subscribeToLocale, readStoredLocale, serverLocale);
+  const locale = stored ?? initialLocale;
 
   useEffect(() => {
     const meta = LOCALE_META[locale];
@@ -64,12 +91,7 @@ export function I18nProvider({
     document.documentElement.dir = meta.dir;
   }, [locale]);
 
-  const setLocale = useCallback((next: Locale) => {
-    setLocaleState(next);
-    window.localStorage.setItem(STORAGE_KEY, next);
-    // The API returns localized menu content, so it needs to know too.
-    document.cookie = `viking_locale=${next};path=/;max-age=31536000;samesite=lax`;
-  }, []);
+  const setLocale = useCallback((next: Locale) => writeStoredLocale(next), []);
 
   const t = useCallback(
     (key: TranslationKey, values?: Interpolations) => {

@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/primitives";
 import { authApi } from "@/lib/api/endpoints";
 import { disconnectEcho } from "@/lib/echo";
+import { useMounted } from "@/hooks/use-mounted";
 import { useI18n } from "@/lib/i18n/provider";
 import { useAuthStore } from "@/stores/auth";
 import { cn, initials } from "@/lib/utils";
@@ -47,9 +48,10 @@ export default function AccountPage() {
   const signOut = useAuthStore((state) => state.signOut);
 
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  // The resolved theme is only known in the browser, so the toggle renders
+  // neutral until hydration rather than flashing the wrong state.
+  const mounted = useMounted();
 
   useEffect(() => {
     const capture = (event: Event) => {
