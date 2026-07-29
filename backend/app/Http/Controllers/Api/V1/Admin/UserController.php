@@ -26,7 +26,7 @@ class UserController extends Controller
         $this->authorize('viewAny', User::class);
 
         $query = User::query()
-            ->with(['roles:id,name', 'branch:id,name_en,name_ar'])
+            ->with(['roles.permissions', 'permissions', 'branch:id,name_en,name_ar'])
             ->when($request->query('search'), function ($q, string $term) {
                 $like = '%'.$term.'%';
                 $q->where(fn ($inner) => $inner
@@ -50,7 +50,7 @@ class UserController extends Controller
     {
         $this->authorize('view', $user);
 
-        return new UserResource($user->load(['roles.permissions', 'branch']));
+        return new UserResource($user->load(['roles.permissions', 'permissions', 'branch']));
     }
 
     public function store(Request $request): JsonResponse
@@ -85,7 +85,7 @@ class UserController extends Controller
         $user->syncRoles($validated['roles']);
 
         return response()->json([
-            'data' => (new UserResource($user->load(['roles', 'branch'])))->resolve(),
+            'data' => (new UserResource($user->load(['roles.permissions', 'permissions', 'branch'])))->resolve(),
             'message' => 'User created.',
         ], 201);
     }
@@ -132,7 +132,7 @@ class UserController extends Controller
         }
 
         return response()->json([
-            'data' => (new UserResource($user->fresh(['roles', 'branch'])))->resolve(),
+            'data' => (new UserResource($user->fresh(['roles.permissions', 'permissions', 'branch'])))->resolve(),
             'message' => 'User updated.',
         ]);
     }

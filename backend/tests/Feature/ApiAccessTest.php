@@ -289,6 +289,32 @@ class ApiAccessTest extends TestCase
         $this->assertSame($customer->id, $order->fresh()->user_id);
     }
 
+    public function test_the_admin_user_list_serialises_without_lazy_loading(): void
+    {
+        $branch = $this->makeBranch();
+        $admin = $this->makeStaff('admin', $branch);
+        $this->makeStaff('cashier', $branch);
+
+        // Regression: UserResource calls getAllPermissions(), which reads the
+        // direct permissions relation *and* each role's. With
+        // preventLazyLoading on, missing either turned this list into a 500.
+        $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/v1/admin/users')
+            ->assertOk()
+            ->assertJsonStructure(['data' => [['id', 'name', 'roles', 'permissions']]]);
+    }
+
+    public function test_the_current_user_endpoint_returns_permissions(): void
+    {
+        $cashier = $this->makeStaff('cashier', $this->makeBranch());
+
+        $this->actingAs($cashier, 'sanctum')
+            ->getJson('/api/v1/auth/me')
+            ->assertOk()
+            ->assertJsonPath('data.roles.0', 'cashier')
+            ->assertJsonStructure(['data' => ['permissions']]);
+    }
+
     private function placeOrder($branch, ?string $guestToken = null)
     {
         $product = $this->makeProduct(['base_price' => 10000]);

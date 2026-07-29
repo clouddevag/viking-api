@@ -100,7 +100,7 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        $user = $request->user()->load(['roles.permissions', 'branch']);
+        $user = $request->user()->load(['roles.permissions', 'permissions', 'branch']);
 
         return response()->json(['data' => (new UserResource($user))->resolve()]);
     }
@@ -119,7 +119,7 @@ class AuthController extends Controller
         $user->fill($validated)->save();
 
         return response()->json([
-            'data' => (new UserResource($user->load('roles')))->resolve(),
+            'data' => (new UserResource($user->load(['roles.permissions', 'permissions'])))->resolve(),
             'message' => 'Profile updated.',
         ]);
     }
@@ -169,7 +169,7 @@ class AuthController extends Controller
      */
     private function tokenResponse(Request $request, User $user, string $message, int $status = 200): JsonResponse
     {
-        $user->load(['roles.permissions', 'branch']);
+        $user->load(['roles.permissions', 'permissions', 'branch']);
 
         $abilities = $user->getAllPermissions()->pluck('name')->all();
 

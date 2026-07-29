@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+# A new push supersedes an in-flight run on the same branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend — tests & lint
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: viking_test
+          MYSQL_ROOT_PASSWORD: root
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, pdo_mysql, intl, gd, zip, bcmath, redis, pcntl
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-
+
+      - run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Check formatting
+        run: ./vendor/bin/pint --test
+
+      # The suite runs on SQLite in memory (phpunit.xml), which is fast and
+      # matches how it runs locally.
+      - name: Run tests
+        run: php artisan test
+
+      # Separately verify the migrations apply cleanly to real MySQL — the
+      # in-memory SQLite run would not catch a MySQL-only syntax error.
+      - name: Verify migrations against MySQL
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: viking_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          QUEUE_CONNECTION: sync
+          BROADCAST_CONNECTION: log
+        run: php artisan migrate:fresh --seed --force
+
+  frontend:
+    name: Frontend — typecheck, lint & build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx eslint .
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: npm run build
+
+  docker:
+    name: Docker images build
+    runs-on: ubuntu-latest
+    # Only worth the minutes once the code itself is known good.
+    needs: [backend, frontend]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/php/Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: docker/next/Dockerfile
+          push: false
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+            NEXT_PUBLIC_SITE_URL=http://localhost:3000
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

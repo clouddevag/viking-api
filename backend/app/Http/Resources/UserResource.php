@@ -30,13 +30,24 @@ class UserResource extends JsonResource
             'branch' => new BranchResource($this->whenLoaded('branch')),
             'is_active' => $this->is_active,
             'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')->all()),
+            // getAllPermissions() reads the direct relation *and* each role's,
+            // so it is only safe once all three are loaded — otherwise
+            // preventLazyLoading turns a list request into a 500.
             'permissions' => $this->when(
-                $this->relationLoaded('roles') || $this->relationLoaded('permissions'),
+                $this->hasLoadedPermissions(),
                 fn () => $this->getAllPermissions()->pluck('name')->values()->all()
             ),
             'is_staff' => $this->when($this->relationLoaded('roles'), fn () => $this->isStaff()),
             'last_login_at' => $this->last_login_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
+    }
+
+    /** Whether every relation `getAllPermissions()` touches is already loaded. */
+    private function hasLoadedPermissions(): bool
+    {
+        return $this->relationLoaded('permissions')
+            && $this->relationLoaded('roles')
+            && $this->roles->every(fn ($role) => $role->relationLoaded('permissions'));
     }
 }
