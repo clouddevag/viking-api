@@ -26,8 +26,21 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
-        channels: __DIR__.'/../routes/channels.php',
         health: '/up',
+    )
+    /*
+     * Channel authorization must accept Sanctum bearer tokens.
+     *
+     * Registering channels through withRouting() puts /broadcasting/auth behind
+     * the `web` middleware alone, which authenticates from a session cookie.
+     * This frontend is a separate origin holding a bearer token and sends no
+     * session cookie, so every private-channel subscribe was answered 403 and
+     * the kitchen, cashier and admin screens fell back to polling — working,
+     * but never actually live.
+     */
+    ->withBroadcasting(
+        __DIR__.'/../routes/channels.php',
+        attributes: ['middleware' => ['api', 'auth:sanctum', 'active']],
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(prepend: [

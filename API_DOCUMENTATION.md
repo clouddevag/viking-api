@@ -337,7 +337,7 @@ Every route additionally requires a specific permission.
 | Area | Routes |
 | --- | --- |
 | Dashboard | `GET /admin/dashboard` — revenue, order counts, top products, hourly load |
-| Reports | `GET /admin/reports/{report}`, `GET /admin/reports/{report}/export` (CSV). Reports: `sales`, `products`, `categories`, `staff`, `payments`, `coupons`, `tables`, `hours` |
+| Reports | `GET /admin/reports/{report}`, `GET /admin/reports/{report}/export` (CSV). Reports: `sales`, `products`, `categories`, `payments`, `staff`, `hours` |
 | Orders | `GET /admin/orders`, `GET /admin/orders/{order}`, `POST …/status`, `POST …/cancel` |
 | Products | full CRUD, `POST /admin/products/reorder`, `POST …/availability` (the 86 switch), `POST /admin/products/{id}/restore` |
 | Categories | full CRUD + `POST /admin/categories/reorder` |

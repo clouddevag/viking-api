@@ -128,8 +128,19 @@ class Product extends Model
     }
 
     /**
-     * Bilingual search. Uses MySQL full-text where available and degrades to
-     * LIKE on SQLite so the same query object works in tests.
+     * Bilingual search.
+     *
+     * On MySQL this is full-text **or** a substring match, not full-text alone.
+     * The index tokenises on whitespace and boolean mode can only match a token
+     * prefix, which is fine for English but loses in Arabic: the definite
+     * article attaches to the word, so "كلاسيك السفينة" indexes "السفينة" and a
+     * customer typing "سفينة" — the bare noun, which is what people actually
+     * type — matches nothing. Arabic is this menu's default locale, so silently
+     * returning an empty list there is not an acceptable trade.
+     *
+     * The substring arm costs a scan, but a menu is tens to low hundreds of
+     * rows; correctness wins at that size. SQLite has no full-text index here
+     * and takes the substring arm alone.
      */
     public function scopeSearch(Builder $query, ?string $term): Builder
     {
@@ -140,22 +151,26 @@ class Product extends Model
         }
 
         $driver = $query->getConnection()->getDriverName();
-
-        if (in_array($driver, ['mysql', 'mariadb'], true) && mb_strlen($term) >= 3) {
-            return $query->whereRaw(
-                'MATCH(name_en, name_ar, short_description_en, short_description_ar) AGAINST (? IN BOOLEAN MODE)',
-                [$this->toBooleanFulltextTerm($term)]
-            );
-        }
+        $fullText = in_array($driver, ['mysql', 'mariadb'], true) && mb_strlen($term) >= 3
+            ? $this->toBooleanFulltextTerm($term)
+            : null;
 
         $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $term).'%';
 
-        return $query->where(function (Builder $inner) use ($like) {
-            $inner->where('name_en', 'like', $like)
+        return $query->where(function (Builder $outer) use ($fullText, $like) {
+            if ($fullText !== '' && $fullText !== null) {
+                $outer->whereRaw(
+                    'MATCH(name_en, name_ar, short_description_en, short_description_ar) AGAINST (? IN BOOLEAN MODE)',
+                    [$fullText]
+                );
+            }
+
+            $outer->orWhere(fn (Builder $inner) => $inner
+                ->where('name_en', 'like', $like)
                 ->orWhere('name_ar', 'like', $like)
                 ->orWhere('short_description_en', 'like', $like)
                 ->orWhere('short_description_ar', 'like', $like)
-                ->orWhere('sku', 'like', $like);
+                ->orWhere('sku', 'like', $like));
         });
     }
 

@@ -27,6 +27,11 @@ Railway will ask for them in step 4.
 Also decide a `VIKING_SEED_PASSWORD`. It becomes the password for all eight
 demo accounts, so pick a real one — the fallback is published in this repo.
 
+> If it contains a `#`, **wrap it in double quotes** anywhere it goes into a
+> `.env` file. Dotenv treats an unquoted `#` as the start of a comment, so
+> `VIKING_SEED_PASSWORD=Pa#1` seeds the password `Pa` and every documented
+> login then fails. Railway's variable editor is not affected.
+
 ---
 
 ## Part 1 — Railway (the backend)

@@ -21,7 +21,16 @@ class StaffSeeder extends Seeder
 {
     public function run(): void
     {
+        // Quote the value in .env if it contains a '#'. Dotenv treats an
+        // unquoted '#' as the start of a comment, so VIKING_SEED_PASSWORD=Pa#1
+        // silently seeds the password "Pa" and every documented login fails.
         $password = (string) env('VIKING_SEED_PASSWORD', 'Viking#2026');
+
+        if ($password === '') {
+            throw new \RuntimeException(
+                'VIKING_SEED_PASSWORD resolved to an empty string. Check for an unquoted "#" in .env.'
+            );
+        }
         $downtown = Branch::where('slug', 'downtown')->first();
         $riverside = Branch::where('slug', 'riverside')->first();
 

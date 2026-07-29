@@ -33,7 +33,7 @@ Individual lines can be marked ready independently.
 receipt printing in either language. Refunds require a manager — the cashier
 role deliberately lacks the permission.
 
-**Managers** get a dashboard, eight report types with CSV export, and full CRUD
+**Managers** get a dashboard, six report types with CSV export, and full CRUD
 over menu, tables, users, roles, coupons, offers, media and settings, with an
 audit log behind all of it.
 
