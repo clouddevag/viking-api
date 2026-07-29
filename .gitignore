@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment — never commit real credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Build output
+/frontend/.next/
+/frontend/out/
+/frontend/build/
+/frontend/.turbo/
+/frontend/next-env.d.ts
+/frontend/public/sw.js
+/frontend/public/workbox-*.js
+/frontend/coverage/
+/frontend/playwright-report/
+/frontend/test-results/
+
+# Laravel
+/backend/public/build/
+/backend/public/hot
+/backend/public/storage
+/backend/storage/*.key
+/backend/storage/pail
+/backend/storage/framework/cache/data/*
+/backend/storage/framework/sessions/*
+/backend/storage/framework/testing/*
+/backend/storage/framework/views/*
+/backend/storage/logs/*
+/backend/bootstrap/cache/*.php
+/backend/database/*.sqlite
+/backend/database/*.sqlite-journal
+/backend/.phpunit.result.cache
+/backend/.phpunit.cache
+/backend/auth.json
+/backend/Homestead.json
+/backend/Homestead.yaml
+
+# Docker volumes
+/docker/data/
+
+# Editors & OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+.fleet/

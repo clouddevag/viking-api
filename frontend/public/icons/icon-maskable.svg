@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Viking">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1a1f"/>
+      <stop offset="100%" stop-color="#0b0b0d"/>
+    </linearGradient>
+    <radialGradient id="ember" cx="50%" cy="62%" r="55%">
+      <stop offset="0%" stop-color="#E2764C"/>
+      <stop offset="100%" stop-color="#B2451F"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="0" fill="url(#g)"/>
+  <circle cx="256.0" cy="256.0" r="137.6" fill="url(#ember)" opacity="0.22"/>
+  <path d="M180.6 177.4 L256.0 347.8 L331.4 177.4"
+        fill="none" stroke="#E2764C" stroke-width="42.6"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M210.1 183.9 L301.9 183.9"
+        stroke="#E2764C" stroke-width="23.4" stroke-linecap="round" opacity="0.75"/>
+</svg>

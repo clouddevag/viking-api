@@ -1,0 +1,315 @@
+@import "tailwindcss";
+
+/*
+| Viking design system
+|
+| The palette is built around a fire-grill kitchen: near-black surfaces that let
+| food photography carry the screen, a burnished ember accent for anything
+| actionable, and warm bone neutrals so the light theme reads as paper rather
+| than as a dimmed dark theme.
+|
+| Colours are declared in oklch so the two themes stay perceptually matched —
+| the same "ember" carries the same weight on black as it does on bone.
+*/
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Brand ------------------------------------------------------------------ */
+  --color-ember-50: oklch(0.97 0.02 55);
+  --color-ember-100: oklch(0.93 0.045 55);
+  --color-ember-200: oklch(0.87 0.08 52);
+  --color-ember-300: oklch(0.8 0.11 50);
+  --color-ember-400: oklch(0.72 0.145 46);
+  --color-ember-500: oklch(0.65 0.17 42);
+  --color-ember-600: oklch(0.57 0.165 38);
+  --color-ember-700: oklch(0.48 0.14 35);
+  --color-ember-800: oklch(0.39 0.11 33);
+  --color-ember-900: oklch(0.31 0.08 32);
+
+  /* Burnished gold, for premium accents and rating stars */
+  --color-gold-300: oklch(0.86 0.09 85);
+  --color-gold-400: oklch(0.8 0.11 82);
+  --color-gold-500: oklch(0.73 0.12 80);
+  --color-gold-600: oklch(0.64 0.11 78);
+
+  /* Neutrals — warm rather than blue-grey, to sit under food photography */
+  --color-bone-50: oklch(0.985 0.004 80);
+  --color-bone-100: oklch(0.965 0.006 80);
+  --color-bone-200: oklch(0.925 0.008 78);
+  --color-bone-300: oklch(0.87 0.009 76);
+  --color-bone-400: oklch(0.72 0.01 74);
+  --color-bone-500: oklch(0.58 0.011 72);
+  --color-bone-600: oklch(0.46 0.011 70);
+  --color-bone-700: oklch(0.36 0.011 68);
+  --color-bone-800: oklch(0.245 0.01 66);
+  --color-bone-900: oklch(0.17 0.008 64);
+  --color-bone-950: oklch(0.115 0.007 62);
+
+  /* Status ----------------------------------------------------------------- */
+  --color-success: oklch(0.62 0.15 150);
+  --color-success-soft: oklch(0.93 0.05 150);
+  --color-warning: oklch(0.72 0.15 78);
+  --color-warning-soft: oklch(0.95 0.06 82);
+  --color-danger: oklch(0.58 0.2 25);
+  --color-danger-soft: oklch(0.93 0.05 25);
+  --color-info: oklch(0.6 0.13 235);
+  --color-info-soft: oklch(0.93 0.04 235);
+
+  /* Typography ------------------------------------------------------------- */
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), Georgia, serif;
+
+  /* Motion — one shared easing so every surface decelerates identically */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Elevation. Warm-tinted rather than pure black, so cards do not look
+     bruised against the bone background. */
+  --shadow-card: 0 1px 2px oklch(0.2 0.01 60 / 0.06), 0 8px 24px oklch(0.2 0.01 60 / 0.07);
+  --shadow-lifted: 0 2px 4px oklch(0.2 0.01 60 / 0.08), 0 16px 40px oklch(0.2 0.01 60 / 0.12);
+  --shadow-ember: 0 8px 32px oklch(0.65 0.17 42 / 0.28);
+
+  --radius-card: 1.25rem;
+}
+
+/*
+| Semantic tokens
+|
+| Components only ever reference these, never the raw scale above, so the theme
+| switch is ~15 variable redefinitions instead of a `dark:` variant audit across
+| every component.
+*/
+:root {
+  --surface-base: var(--color-bone-50);
+  --surface-raised: #ffffff;
+  --surface-sunken: var(--color-bone-100);
+  --surface-inverse: var(--color-bone-950);
+  --surface-overlay: oklch(0.17 0.008 64 / 0.45);
+
+  --border-subtle: var(--color-bone-200);
+  --border-strong: var(--color-bone-300);
+
+  --text-primary: var(--color-bone-950);
+  --text-secondary: var(--color-bone-600);
+  --text-muted: var(--color-bone-500);
+  --text-inverse: var(--color-bone-50);
+
+  --accent: var(--color-ember-600);
+  --accent-hover: var(--color-ember-700);
+  --accent-soft: var(--color-ember-50);
+  --accent-contrast: #ffffff;
+
+  color-scheme: light;
+}
+
+.dark {
+  --surface-base: var(--color-bone-950);
+  --surface-raised: oklch(0.155 0.008 64);
+  --surface-sunken: oklch(0.095 0.006 62);
+  --surface-inverse: var(--color-bone-50);
+  --surface-overlay: oklch(0.06 0.005 60 / 0.72);
+
+  --border-subtle: oklch(0.24 0.008 64);
+  --border-strong: oklch(0.32 0.009 66);
+
+  --text-primary: var(--color-bone-50);
+  --text-secondary: var(--color-bone-400);
+  --text-muted: var(--color-bone-500);
+  --text-inverse: var(--color-bone-950);
+
+  /* Lifted one step: the 600 that reads well on paper goes muddy on black. */
+  --accent: var(--color-ember-400);
+  --accent-hover: var(--color-ember-300);
+  --accent-soft: oklch(0.28 0.07 42);
+  --accent-contrast: oklch(0.12 0.01 60);
+
+  --color-success-soft: oklch(0.26 0.05 150);
+  --color-warning-soft: oklch(0.28 0.06 82);
+  --color-danger-soft: oklch(0.27 0.06 25);
+  --color-info-soft: oklch(0.26 0.05 235);
+
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.4), 0 8px 24px oklch(0 0 0 / 0.45);
+  --shadow-lifted: 0 2px 4px oklch(0 0 0 / 0.5), 0 16px 40px oklch(0 0 0 / 0.55);
+
+  color-scheme: dark;
+}
+
+/* Expose the semantic tokens as Tailwind utilities (bg-surface, text-content…) */
+@theme inline {
+  --color-surface: var(--surface-base);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-content: var(--text-primary);
+  --color-content-secondary: var(--text-secondary);
+  --color-content-muted: var(--text-muted);
+  --color-content-inverse: var(--text-inverse);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-contrast: var(--accent-contrast);
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--surface-base);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /*
+  | Arabic sets slightly larger and looser: at an identical px size Arabic
+  | glyphs read smaller than Latin, and the diacritics need vertical room.
+  */
+  [dir="rtl"] body {
+    font-size: 1.03em;
+    line-height: 1.75;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  /* Arabic has no serif display tradition matching this one, so the body face
+     carries headings instead, weighted up. */
+  [dir="rtl"] h1,
+  [dir="rtl"] h2,
+  [dir="rtl"] h3,
+  [dir="rtl"] h4 {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Respect the OS setting rather than animating regardless. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+}
+
+@layer components {
+  /*
+  | Numerals stay Latin and tabular in prices and totals: Arabic-Indic digits
+  | in a bill column are hard to scan and will not align, and `direction: ltr`
+  | keeps a price like "12,000 IQD" from reordering inside RTL text.
+  */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  .surface-card {
+    background-color: var(--surface-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Horizontal rails hide their scrollbar but stay wheel and keyboard usable. */
+  .rail {
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+  }
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+  .rail > * {
+    scroll-snap-align: start;
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--surface-sunken) 25%,
+      var(--border-subtle) 50%,
+      var(--surface-sunken) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+
+  @keyframes shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  /* Kitchen ticket ageing — a slow pulse that is visible across a room. */
+  @keyframes ticket-urgent {
+    0%, 100% { box-shadow: 0 0 0 0 var(--color-danger); }
+    50% { box-shadow: 0 0 0 6px oklch(0.58 0.2 25 / 0); }
+  }
+  .ticket-urgent {
+    animation: ticket-urgent 2s var(--ease-out-quint) infinite;
+  }
+}
+
+@layer utilities {
+  /* Logical spacing so one class works in both directions. */
+  .ps-safe {
+    padding-inline-start: max(1rem, env(safe-area-inset-left));
+  }
+  .pe-safe {
+    padding-inline-end: max(1rem, env(safe-area-inset-right));
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Keeps long Arabic product names from breaking card layouts. */
+  .clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
