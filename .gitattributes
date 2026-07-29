@@ -1,0 +1,46 @@
+# Line endings.
+#
+# Git on Windows defaults to core.autocrlf=true, which rewrites LF to CRLF on
+# checkout. Every file here is eventually read by a Linux container, and CRLF
+# breaks several of them in ways whose error messages point somewhere else:
+#
+#   * A shell script with \r\n fails as
+#     "exec /usr/local/bin/entrypoint: no such file or directory" — the kernel
+#     reads the shebang as "/bin/sh\r" and reports the interpreter missing, so
+#     it looks like the file was never copied.
+#   * A .env with \r\n leaves the carriage return *inside* the value, so
+#     DB_PASSWORD=secret becomes "secret\r" and MySQL rejects the login with no
+#     hint as to why.
+#   * A Dockerfile with \r\n breaks backslash line-continuations.
+#
+# Normalising the whole tree to LF costs Windows editors nothing — Notepad has
+# handled LF since 2018, and every other editor already did.
+* text=auto eol=lf
+
+# Files that must never be touched, whatever the heuristic decides.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.pdf binary
+*.zip binary
+*.sqlite binary
+*.sqlite3 binary
+
+# Belt and braces for the ones that actually break. `text eol=lf` is explicit
+# rather than relying on `text=auto` guessing these are text.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf
+.env* text eol=lf
+*.conf text eol=lf
+*.ini text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

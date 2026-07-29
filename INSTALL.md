@@ -12,6 +12,31 @@ for working on the code day to day.
 Docker Engine 24+ with the Compose plugin. Nothing else — no PHP, no Node, no
 MySQL on the host.
 
+**On Windows 11**, Docker Desktop with the **WSL 2 backend** — the default since
+Docker Desktop 4.x. Check **Settings → General → "Use WSL 2 based engine"** is
+ticked. If Docker Desktop reports WSL 2 is missing, run `wsl --install` in an
+administrator PowerShell and reboot; on Windows 11 that enables the *Virtual
+Machine Platform* and *Windows Subsystem for Linux* features and installs the
+kernel in one step.
+
+Run the commands below from **PowerShell**, not Git Bash — Git Bash rewrites
+absolute paths in `docker compose exec` arguments and the errors it produces are
+misleading.
+
+> **Clone with LF line endings.** The repository ships a `.gitattributes` that
+> forces this, so a fresh clone is already correct. If you cloned *before* that
+> file existed, re-normalise once:
+>
+> ```powershell
+> git rm --cached -r .
+> git reset --hard
+> ```
+>
+> Otherwise Git's Windows default rewrites the container entrypoints to CRLF and
+> the API container dies at boot with
+> `exec /usr/local/bin/entrypoint: no such file or directory` — which reads like
+> a missing file but is really the `\r` in the shebang.
+
 ### Steps
 
 ```bash

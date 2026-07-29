@@ -53,6 +53,24 @@ return Application::configure(basePath: dirname(__DIR__))
         // trying to redirect to a `login` route that does not exist.
         $middleware->redirectGuestsTo(fn () => null);
 
+        /*
+         * The API is only ever reached through a proxy — nginx under Compose,
+         * the platform edge on Railway — so X-Forwarded-* must be honoured.
+         *
+         * Without this every request appears to come from the proxy's address.
+         * The rate limiters key on $request->ip(), so the whole restaurant
+         * would share one 10/minute login bucket and a single member of staff
+         * mistyping their password would lock out the tills. $request->secure()
+         * would also stay false behind TLS termination, silently suppressing
+         * the HSTS header.
+         *
+         * Trusting every proxy is the right setting here rather than a lax one:
+         * the container is not routable except through that proxy (Compose
+         * publishes nginx only; Railway publishes its edge only), and the
+         * platform's address is not fixed enough to pin.
+         */
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'active' => EnsureUserIsActive::class,
             'guest.or.auth' => OptionalSanctumAuth::class,
