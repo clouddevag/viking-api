@@ -17,6 +17,29 @@ that runs processes.
 
 ---
 
+## Option 0 — Railway + Vercel (no server administration)
+
+The simplest supported path, and the one to use unless you specifically want a
+machine of your own. Railway runs the API, queue worker, Reverb, MySQL and
+Redis; Vercel runs the frontend. Both deploy from this GitHub repository.
+
+**Click-by-click instructions: [DEPLOY_NOW.md](DEPLOY_NOW.md).**
+
+The pieces that make it work are already in the repository:
+
+- `docker/railway/Dockerfile` — a **single-container** image built on
+  FrankenPHP. The Compose setup splits php-fpm and nginx across two containers,
+  which Railway cannot express: it routes one HTTP port per service. FrankenPHP
+  is one process that speaks HTTP directly, and the same image serves the API,
+  the worker and Reverb with only the start command changed.
+- `docker/railway/entrypoint.sh` — binds `$PORT`, maps Railway's `MYSQL*` and
+  `REDIS*` plugin variables onto Laravel's `DB_*` and `REDIS_*`, then migrates
+  and seeds when `RUN_MIGRATIONS=true`.
+- `railway.json` — build and healthcheck configuration (`/up`).
+- `frontend/vercel.json` — framework, build command and region.
+
+---
+
 ## Option 1 — Single VPS with Docker Compose
 
 The fastest route to a working production install. One 2 vCPU / 4 GB machine

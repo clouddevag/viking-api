@@ -58,6 +58,7 @@ in **[INSTALL.md](INSTALL.md)**.
 
 | | |
 | --- | --- |
+| **[DEPLOY_NOW.md](DEPLOY_NOW.md)** | Click-by-click Railway + Vercel deployment |
 | **[INSTALL.md](INSTALL.md)** | Docker and local setup, first run, troubleshooting |
 | **[DEPLOYMENT.md](DEPLOYMENT.md)** | VPS and split hosting, TLS, S3, production checklist |
 | **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** | All 117 endpoints, auth, realtime channels |
