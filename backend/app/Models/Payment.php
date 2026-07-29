@@ -17,6 +17,13 @@ class Payment extends Model
 
     protected $guarded = ['id'];
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'method' => 'cash',
+        'status' => 'pending',
+        'change_amount' => 0,
+    ];
+
     protected function casts(): array
     {
         return [

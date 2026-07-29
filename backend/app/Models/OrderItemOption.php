@@ -26,6 +26,13 @@ class OrderItemOption extends Model
 
     protected $guarded = ['id'];
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'group_kind' => 'addon',
+        'price_delta' => 0,
+        'quantity' => 1,
+    ];
+
     protected function casts(): array
     {
         return [

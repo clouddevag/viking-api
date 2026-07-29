@@ -22,6 +22,12 @@ class TableSession extends Model
 
     protected $guarded = ['id'];
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'status' => 'open',
+        'party_size' => 1,
+    ];
+
     protected function casts(): array
     {
         return [

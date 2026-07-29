@@ -32,11 +32,14 @@ class SettingsSeeder extends Seeder
             ['kitchen', 'critical_after_minutes', 20, false],
             ['kitchen', 'sound_enabled', true, false],
 
-            ['receipt', 'header_en', 'VIKING RESTAURANT', false],
-            ['receipt', 'header_ar', 'مطعم فايكنج', false],
-            ['receipt', 'footer_en', 'Thank you — see you again!', false],
-            ['receipt', 'footer_ar', 'شكراً لزيارتكم — نراكم قريباً!', false],
-            ['receipt', 'show_qr', true, false],
+            // Keys are fully qualified rather than scoped by `group`, because
+            // Setting::map() is a flat lookup and `header_en` alone would
+            // collide the moment a second group wants a header.
+            ['receipt', 'receipt_header_en', 'VIKING RESTAURANT', false],
+            ['receipt', 'receipt_header_ar', 'مطعم فايكنج', false],
+            ['receipt', 'receipt_footer_en', 'Thank you — see you again!', false],
+            ['receipt', 'receipt_footer_ar', 'شكراً لزيارتكم — نراكم قريباً!', false],
+            ['receipt', 'receipt_show_qr', true, false],
         ];
 
         foreach ($defaults as [$group, $key, $value, $isPublic]) {

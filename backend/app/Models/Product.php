@@ -12,9 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * @property-read string $name
@@ -94,16 +95,20 @@ class Product extends Model
     }
 
     /**
-     * Own groups plus shared ones, merged and sorted as a single list for the
-     * product detail screen.
+     * Own groups plus shared ones, merged into the single ordered list the
+     * product detail screen renders.
      *
-     * @return \Illuminate\Support\Collection<int, OptionGroup>
+     * A shared group's position is per-product, so it comes from the pivot
+     * rather than the group's own `sort_order` — the same "Extra sauces" group
+     * may sit in a different place on a burger than on a side.
+     *
+     * @return Collection<int, OptionGroup>
      */
     public function allOptionGroups()
     {
         return $this->ownOptionGroups
             ->concat($this->sharedOptionGroups)
-            ->sortBy('sort_order')
+            ->sortBy(fn (OptionGroup $group) => $group->pivot->sort_order ?? $group->sort_order)
             ->values();
     }
 

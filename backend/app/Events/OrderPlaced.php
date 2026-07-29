@@ -7,6 +7,7 @@ namespace App\Events;
 use App\Broadcasting\OrderChannels;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -24,7 +25,7 @@ class OrderPlaced implements ShouldBroadcast
 
     public function __construct(public readonly Order $order) {}
 
-    /** @return array<int, \Illuminate\Broadcasting\Channel> */
+    /** @return array<int, Channel> */
     public function broadcastOn(): array
     {
         return OrderChannels::forOrder($this->order);

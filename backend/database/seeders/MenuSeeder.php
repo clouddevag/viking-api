@@ -11,7 +11,6 @@ use App\Models\Option;
 use App\Models\OptionGroup;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 /**
  * The full bilingual menu.

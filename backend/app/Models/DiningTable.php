@@ -15,8 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * A physical table. The QR code encodes `qr_token`, never the table number, so
@@ -35,6 +35,13 @@ class DiningTable extends Model
     protected array $localized = ['name'];
 
     protected $guarded = ['id'];
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'status' => 'available',
+        'is_active' => true,
+        'capacity' => 4,
+    ];
 
     protected function casts(): array
     {

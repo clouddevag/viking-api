@@ -8,6 +8,7 @@ use App\Enums\OrderStatus;
 use App\Enums\OrderType;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Services\Orders\OrderStatusService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +21,7 @@ use Illuminate\Support\Carbon;
  * The order aggregate.
  *
  * Status changes never happen by assignment — they go through
- * {@see \App\Services\Orders\OrderStatusService} so the transition is
+ * {@see OrderStatusService} so the transition is
  * validated, timestamped, journalled and broadcast as one unit.
  */
 class Order extends Model
@@ -29,6 +30,27 @@ class Order extends Model
     use SoftDeletes;
 
     protected $guarded = ['id'];
+
+    /**
+     * Column defaults are applied by the database, which leaves them null on
+     * the in-memory model right after `create()`. Declaring them here means a
+     * freshly created order serialises correctly without a round trip.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'status' => 'pending',
+        'payment_status' => 'unpaid',
+        'type' => 'dine_in',
+        'subtotal' => 0,
+        'discount_total' => 0,
+        'manual_discount_total' => 0,
+        'tax_total' => 0,
+        'service_charge' => 0,
+        'delivery_fee' => 0,
+        'grand_total' => 0,
+        'refunded_total' => 0,
+    ];
 
     protected function casts(): array
     {

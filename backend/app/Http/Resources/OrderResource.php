@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * display, the cashier and the admin list alike — one payload keeps the
  * websocket message and the REST response identical.
  *
- * @mixin \App\Models\Order
+ * @mixin Order
  */
 class OrderResource extends JsonResource
 {

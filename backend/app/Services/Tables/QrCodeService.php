@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Tables;
 
 use App\Models\DiningTable;
+use BaconQrCode\Common\ErrorCorrectionLevel;
 use BaconQrCode\Encoder\Encoder;
 use BaconQrCode\Encoder\QrCode;
 
@@ -36,7 +37,7 @@ class QrCodeService
     {
         // Medium error correction: survives a scuffed table tent without
         // inflating the module count the way High would.
-        $qrCode = Encoder::encode($payload, \BaconQrCode\Common\ErrorCorrectionLevel::M());
+        $qrCode = Encoder::encode($payload, ErrorCorrectionLevel::M());
 
         return $this->render($qrCode, $size, $margin);
     }

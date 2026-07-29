@@ -7,6 +7,7 @@ namespace App\Events;
 use App\Broadcasting\OrderChannels;
 use App\Models\Order;
 use App\Models\Payment;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -27,7 +28,7 @@ class OrderPaymentRecorded implements ShouldBroadcast
         public readonly Payment $payment,
     ) {}
 
-    /** @return array<int, \Illuminate\Broadcasting\Channel> */
+    /** @return array<int, Channel> */
     public function broadcastOn(): array
     {
         return OrderChannels::forOrder($this->order);

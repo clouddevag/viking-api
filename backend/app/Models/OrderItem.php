@@ -28,6 +28,14 @@ class OrderItem extends Model
 
     protected $guarded = ['id'];
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'status' => 'pending',
+        'options_total' => 0,
+        'discount_total' => 0,
+        'prep_time_minutes' => 0,
+    ];
+
     protected function casts(): array
     {
         return [

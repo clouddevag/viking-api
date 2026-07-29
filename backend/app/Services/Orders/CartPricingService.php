@@ -11,6 +11,7 @@ use App\Data\PricedLine;
 use App\Data\PricedOption;
 use App\Enums\OrderType;
 use App\Exceptions\CartValidationException;
+use App\Exceptions\CouponException;
 use App\Models\Branch;
 use App\Models\Coupon;
 use App\Models\Offer;
@@ -39,7 +40,7 @@ class CartPricingService
      * @param  array<int, CartLineInput>  $inputs
      *
      * @throws CartValidationException
-     * @throws \App\Exceptions\CouponException
+     * @throws CouponException
      */
     public function price(
         array $inputs,
@@ -91,7 +92,7 @@ class CartPricingService
                     userId: $userId,
                     guestToken: $guestToken,
                 );
-            } catch (\App\Exceptions\CouponException $e) {
+            } catch (CouponException $e) {
                 if ($throwOnInvalidCoupon) {
                     throw $e;
                 }

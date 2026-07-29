@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Enums\DiscountType;
 use App\Enums\OfferType;
+use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\Offer;
 use App\Models\Product;
@@ -132,7 +133,7 @@ class MarketingSeeder extends Seeder
 
             if (($data['applies_to'] ?? 'all') === 'categories') {
                 $coupon->categories()->sync(
-                    \App\Models\Category::where('slug', 'desserts')->pluck('id')->all()
+                    Category::where('slug', 'desserts')->pluck('id')->all()
                 );
             }
         }

@@ -8,6 +8,7 @@ use App\Broadcasting\OrderChannels;
 use App\Enums\OrderStatus;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -29,7 +30,7 @@ class OrderStatusChanged implements ShouldBroadcast
         public readonly OrderStatus $to,
     ) {}
 
-    /** @return array<int, \Illuminate\Broadcasting\Channel> */
+    /** @return array<int, Channel> */
     public function broadcastOn(): array
     {
         return OrderChannels::forOrder($this->order);

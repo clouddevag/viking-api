@@ -7,6 +7,7 @@ namespace App\Events;
 use App\Broadcasting\OrderChannels;
 use App\Models\Order;
 use App\Models\Refund;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -23,7 +24,7 @@ class OrderRefunded implements ShouldBroadcast
         public readonly Refund $refund,
     ) {}
 
-    /** @return array<int, \Illuminate\Broadcasting\Channel> */
+    /** @return array<int, Channel> */
     public function broadcastOn(): array
     {
         return OrderChannels::forOrder($this->order);
