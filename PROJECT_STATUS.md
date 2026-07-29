@@ -1,18 +1,18 @@
 # PROJECT_STATUS.md — Viking Restaurant Platform
 
 **Generated:** 29 July 2026 · **Branch:** `claude/viking-ordering-platform-uo9v1t`
-**Last verified commit:** `5fc6d0b`
+**Last verified commit:** `06b4df0`
 
 ---
 
 ## Overall completion
 
-**≈ 92%**
+**≈ 98%**
 
-Every functional module is built, verified end to end and covered by tests. The
-remaining ~8% is deployment packaging (Docker, CI, documentation), which is in
-progress, plus one item that cannot be completed without credentials — see
-[Blockers](#current-blockers).
+Every functional module is built, verified end to end and covered by tests.
+Deployment packaging, CI and the full documentation set are done. The remaining
+2% is the deployment itself, which cannot proceed without credentials the
+account owner has to grant — see [Blockers](#current-blockers).
 
 | Layer | Completion |
 |---|---|
@@ -24,8 +24,8 @@ progress, plus one item that cannot be completed without credentials — see
 | Kitchen display | 100% |
 | Cashier POS | 100% |
 | Admin dashboard | 100% |
-| Automated tests | 85% (backend deep, frontend unit pending) |
-| DevOps & docs | 40% (in progress) |
+| Automated tests | 100% (83 backend, 48 frontend) |
+| DevOps & docs | 100% |
 
 ---
 
@@ -46,7 +46,9 @@ progress, plus one item that cannot be completed without credentials — see
 | **Kitchen display** | 3 lanes, ageing colours, synthesised sound, large touch targets |
 | **Cashier POS** | Queue, floor plan, split payment, refunds, discounts, receipt print |
 | **Admin dashboard** | 14 screens including 6 reports with CSV export |
-| **Testing** | 83 backend tests, 200 assertions, all passing |
+| **Testing** | 83 backend tests (200 assertions) + 48 frontend tests, all passing |
+| **DevOps** | Docker Compose (7 services), multi-stage images, GitHub Actions CI |
+| **Documentation** | README, INSTALL, DEPLOYMENT, API_DOCUMENTATION, DATABASE_SCHEMA |
 
 ---
 
@@ -54,11 +56,12 @@ progress, plus one item that cannot be completed without credentials — see
 
 | Module | State |
 |---|---|
-| `docker-compose.yml` + Dockerfiles | ⬜ In progress |
-| GitHub Actions CI | ⬜ In progress |
-| `DEPLOYMENT.md` / `INSTALL.md` / `API_DOCUMENTATION.md` / `DATABASE_SCHEMA.md` | ⬜ In progress |
-| Frontend unit tests (Vitest) | ⬜ Pending |
-| Production deployment | 🔴 Blocked — no credentials |
+| `docker-compose.yml` + Dockerfiles | ✅ Done — `docker compose config` validates |
+| GitHub Actions CI | ✅ Done — backend, frontend, image builds |
+| Documentation set | ✅ Done — 5 files |
+| Frontend unit tests (Vitest) | ✅ Done — 48 tests |
+| **Push to GitHub** | 🔴 **Blocked** — installation is read-only |
+| **Production deployment** | 🔴 **Blocked** — no host for the API |
 
 ---
 
@@ -68,12 +71,22 @@ progress, plus one item that cannot be completed without credentials — see
 |---|---|---|
 | Frontend production build | `npm run build` | ✅ **Pass** — 32 routes compiled |
 | Frontend typecheck | `npx tsc --noEmit` | ✅ **Pass** — 0 errors |
+| Frontend lint | `npx eslint .` | ✅ **Pass** — 0 errors, 0 warnings |
+| Frontend tests | `npm run test` | ✅ **Pass** — 48/48 |
 | Backend test suite | `php artisan test` | ✅ **Pass** — 83/83, 200 assertions |
-| Backend lint | `./vendor/bin/pint` | ✅ **Pass** |
+| Backend lint | `./vendor/bin/pint --test` | ✅ **Pass** |
 | Migrations | `php artisan migrate:fresh` | ✅ **Pass** — 31/31 |
 | Seeders | `php artisan db:seed` | ✅ **Pass** — 6 seeders |
+| Compose file | `docker compose config` | ✅ **Pass** |
 
-Compile errors: **0**. TypeScript errors: **0**. Laravel errors: **0**.
+Compile errors: **0**. TypeScript errors: **0**. Lint errors: **0**.
+Laravel errors: **0**.
+
+ESLint had never been run across the full tree until this pass; it surfaced
+nine React 19 rule violations, all of which were real bugs rather than style
+complaints (state copied from effects, refs written during render, the clock
+read during render). All nine are fixed — see the commit for the reasoning per
+site.
 
 ---
 
@@ -255,17 +268,39 @@ php artisan test  →  83 tests, 200 assertions, 0 failures (10.5s)
 | `ApiAccessTest` | 22 | RBAC boundaries, branch scoping, guest ownership isolation, QR scan, locale negotiation, deactivated tokens |
 | `OrderStatusTest` (unit) | 8 | State machine, discount arithmetic, order-type rules |
 
-Frontend: typecheck and production build pass. Vitest unit tests for the cart
-store and format helpers are pending.
+```
+npm run test  →  48 tests, 3 files, 0 failures (2.0s)
+```
+
+| Suite | Tests | Covers |
+|---|---|---|
+| `cart.test.ts` | 21 | Line-key merging (identical adds, differing options, option order, blank notes), quantity cap, branch switching clearing the cart, coupon reset, reorder producing a key that matches a live add, table context excluded from persistence |
+| `format.test.ts` | 18 | IQD vs decimal currencies, currency placement per locale, Latin numerals in Arabic, `MM:SS` past an hour, future timestamps clamped, null → em dash, percent change with a zero baseline |
+| `utils.test.ts` | 9 | Tailwind class precedence, debounce collapsing a burst, cancellation, clamp, initials for Latin and Arabic names |
+
+Frontend typecheck, lint and production build all pass.
 
 ---
 
-## GitHub status — ✅ Connected
+## GitHub status — 🔴 Blocked (read-only installation)
 
-- Repository: **`clouddevag/viking-api`** (already exists)
+- Repository: **`clouddevag/viking-api`** (exists, reachable for reads)
 - Branch: `claude/viking-ordering-platform-uo9v1t`
-- 6 commits, each a completed milestone.
-- Pushed automatically after every milestone.
+- **10 commits built locally, 0 pushed.**
+
+Both write paths return 403:
+
+```
+git push origin claude/…      → 403 on git-receive-pack (from GitHub, via the proxy)
+POST /repos/…/git/refs        → 403 "Resource not accessible by integration"
+```
+
+Reads work (`git ls-remote` lists `main`), so this is specifically a missing
+**Contents: write** permission on the GitHub App installation, not a network or
+authentication failure. Nothing can be pushed until the account owner grants it
+at <https://claude.ai/admin-settings/claude-in-slack> or in the app's
+installation settings on GitHub. Once granted, one `git push -u origin
+claude/viking-ordering-platform-uo9v1t` publishes all 10 commits.
 
 ⚠️ **Security — action required by the repository owner.** The Express relay
 that previously occupied this repo had a **Telegram bot token and mail
@@ -278,16 +313,27 @@ references them.
 
 ## Deployment status — 🟡 Prepared, not deployed
 
-No hosting credentials are present in this environment, so nothing has been
-deployed. The project is being packaged for one-command deployment
-(`docker compose up -d --build`) — see `DEPLOYMENT.md`.
+Packaging is complete and validated: `docker compose config` passes, both
+images have Dockerfiles, CI builds them, and `DEPLOYMENT.md` documents the
+one-command path. Nothing is deployed.
 
-**Why Vercel alone is not sufficient:** the frontend is a Next.js app and would
-deploy to Vercel unchanged, but it is useless without the Laravel API, MySQL,
-Redis and the Reverb websocket server, none of which run on Vercel. A complete
-deployment needs the frontend on Vercel *and* the backend on a host that can
-run PHP-FPM plus long-lived processes (Fly.io, Railway, Hetzner, DigitalOcean),
-or the whole stack via the provided Docker Compose file.
+**Vercel is connected** (team `maxalimax2021-2288's projects`) and has no
+Viking project yet. It was not used, for two reasons:
+
+1. **A frontend-only deploy is not a working deployment.** Vercel runs
+   functions; the Laravel API, MySQL, Redis and Reverb cannot live there, and
+   two of those are long-running processes. Until `NEXT_PUBLIC_API_URL` points
+   at a live API, every page would render its shell and then its error state —
+   an empty menu and a sign-in that fails. Returning that as a "production URL"
+   would misrepresent it.
+2. **The normal path is blocked upstream.** Vercel's git integration deploys
+   from a GitHub repository, and the repository cannot be pushed (above). The
+   only alternative tool available inlines the entire source tree into one
+   call — ~500 KB across 82 files — which is not a reasonable way to ship this.
+
+**The unblock is one step:** grant GitHub push access. Then push the branch,
+connect the Vercel project to the repo with root directory `frontend`, and
+point `NEXT_PUBLIC_API_URL` at wherever the API is hosted.
 
 ---
 
@@ -295,14 +341,16 @@ or the whole stack via the provided Docker Compose file.
 
 | # | Blocker | Needed to unblock | Impact |
 |---|---|---|---|
-| 1 | **No hosting credentials** | Either (a) a server with Docker + SSH, or (b) a Vercel token *and* a PHP host for the API | Cannot return a production URL. Everything is packaged for one-command deploy. |
+| 1 | **GitHub App installation is read-only** | Owner grants **Contents: write** on `clouddevag/viking-api` | 10 commits cannot leave this container. This also blocks Vercel's git-based deploy. **Highest priority — everything else is downstream of it.** |
+| 1b | **No host for the API** | A container host (Railway, Render, Fly.io, VPS) + managed MySQL 8 + Redis 7 | Cannot return a working production URL. Vercel alone cannot run PHP-FPM, the queue worker or Reverb. |
 | 2 | **Leaked Telegram bot token in git history** | Owner revokes it via @BotFather | Anyone with repo history can control that bot. Not used by the new code. |
 | 3 | **No S3 credentials** | `AWS_*` in `backend/.env` | Media uploads fall back to the local `public` disk — fine for a single server, not for multi-node. |
 | 4 | **No SMTP credentials** | `MAIL_*` in `backend/.env` | Mail is written to the log driver. No customer-facing feature depends on it yet. |
 | 5 | **MySQL unavailable in this container** | — | Development and tests ran on SQLite. Migrations are written portably and MySQL-specific paths (full-text search, date functions) are branched on the driver, but they have not executed against a real MySQL 8 instance. First `docker compose up` will exercise them. |
 
-None of these block further development; items 1–4 are credential handovers,
-and item 5 resolves the first time the stack runs under Docker.
+None of these block further development of the code itself. Items 1–4 are
+credential handovers; item 5 resolves the first time the stack runs under
+Docker, and CI asserts it on every push once the repo is reachable.
 
 ---
 
@@ -323,7 +371,7 @@ npm install && npm run dev
 
 Open `http://localhost:3000`. Sign in at `/auth/login`.
 
-**Seeded accounts — password `Viking#2026`:**
+**Seeded accounts — password `Viking#2026` unless `VIKING_SEED_PASSWORD` was set:**
 
 | Email | Role | Lands on |
 |---|---|---|

@@ -2,7 +2,7 @@
 
 Working state of the build. Update this file at the end of every work session.
 
-**Last updated:** commit `2e4101e` — customer PWA complete.
+**Last updated:** commit `06b4df0` — all 12 phases complete; blocked on GitHub push access.
 **Branch:** `claude/viking-ordering-platform-uo9v1t`
 
 ---
@@ -18,11 +18,14 @@ Working state of the build. Update this file at the end of every work session.
 | 5 | Realtime (Reverb) — backend | ✅ Events + channels done |
 | 6 | Frontend foundation | ✅ Done |
 | 7 | Customer PWA | ✅ Done |
-| 8 | Admin panel | ⬜ **NEXT** |
-| 9 | Kitchen display | ⬜ Pending |
-| 10 | Cashier POS | ⬜ Pending |
-| 11 | Testing | ⬜ Pending |
-| 12 | Docker / CI / deployment docs | ⬜ Pending |
+| 8 | Admin panel | ✅ Done — 14 screens |
+| 9 | Kitchen display | ✅ Done |
+| 10 | Cashier POS | ✅ Done |
+| 11 | Testing | ✅ Done — 83 backend + 48 frontend |
+| 12 | Docker / CI / deployment docs | ✅ Done |
+
+**All twelve phases are complete.** What remains is not code — see
+[§7 Remaining work](#7-remaining-work).
 
 ---
 
@@ -194,38 +197,46 @@ groups, 48 options, 3 coupons, 3 offers, ~105 orders across 14 days.
 
 ## 7. Remaining work
 
-### Phase 8 — Admin panel (NEXT)
-Routes under `src/app/(staff)/admin/`:
-- shared staff shell with sidebar + role guard
-- `page.tsx` dashboard (stat tiles, 14-day trend, hourly, top sellers, live orders)
-- orders list + detail (status transitions, cancel)
-- products CRUD + availability toggle + reorder
-- categories CRUD, option groups editor
-- tables: grid, bulk create, QR print sheet, rotate token
-- users + roles matrix
-- coupons, offers
-- reports (6 tabs, CSV export)
-- media library, settings, activity log, reviews moderation
+No code is outstanding. Two external grants are, and both belong to the account
+owner.
 
-### Phase 9 — Kitchen display (`/kitchen`)
-Three lanes from `kitchen/board`, `useKitchenRealtime`, ticket age colouring
-(warning/critical thresholds come from the API `meta`), sound on new order,
-large touch targets, single advance button per ticket.
+### 🔴 Blocker 1 — GitHub push access (highest priority)
 
-### Phase 10 — Cashier POS (`/cashier`)
-Open orders list, floor plan from `cashier/tables`, payment sheet with
-tendered/change, refund + manager discount, receipt print view
-(`cashier/receipts/{n}` returns structured data, not HTML).
+The GitHub App installation on `clouddevag/viking-api` is **read-only**.
 
-### Phase 11 — Testing
-Backend: Pest/PHPUnit feature tests for cart pricing rules, coupon concurrency,
-order state machine, payment/refund ledger, RBAC boundaries, guest ownership.
-Frontend: Vitest for cart store + format helpers.
+```
+git push origin claude/…   → 403 on git-receive-pack
+POST /repos/…/git/refs     → 403 "Resource not accessible by integration"
+git ls-remote origin       → works (reads are fine)
+```
 
-### Phase 12 — DevOps
-`docker-compose.yml` (nginx, php-fpm, mysql, redis, reverb, next),
-`docker/` configs, multi-stage Dockerfiles, GitHub Actions CI, README with
-one-command deploy.
+**10 commits are built locally and cannot leave the container.** Grant
+**Contents: write** at <https://claude.ai/admin-settings/claude-in-slack> or in
+the GitHub App's installation settings, then:
+
+```bash
+git push -u origin claude/viking-ordering-platform-uo9v1t
+```
+
+This also blocks the Vercel deploy, which works from a GitHub repository.
+
+### 🔴 Blocker 2 — a host for the API
+
+Vercel is connected but can only host the frontend. The Laravel API, MySQL,
+Redis and Reverb need a container host; two of those are long-running
+processes. Provision one (Railway, Render, Fly.io, a VPS) plus managed MySQL 8
+and Redis 7, then set `NEXT_PUBLIC_API_URL` on the Vercel project and redeploy.
+
+Deploying the frontend on its own would produce a URL where the menu is empty
+and sign-in fails — see `DEPLOYMENT.md` for the full reasoning.
+
+### Optional, once deployed
+
+- S3 credentials (`AWS_*`) so uploaded media survives a container restart.
+- SMTP credentials (`MAIL_*`) — nothing customer-facing depends on mail yet.
+- A live websocket handshake against Reverb. Events are unit-tested and the
+  polling fallback is verified, but no long-running process ran in this
+  container.
 
 ---
 
@@ -249,6 +260,24 @@ one-command deploy.
 - **SQLite in dev**: avoid MySQL-only SQL. `GREATEST` → `CASE WHEN`; date
   grouping is branched on the driver in Dashboard/Report controllers.
 - **`php artisan install:broadcasting`** needs a TTY — configure Reverb by hand.
+- **`Event::fake()` with no arguments** disables model `booted` hooks too, so
+  `DiningTable` stopped minting `qr_token` and every insert hit a NOT NULL
+  violation. Always fake an explicit list of broadcast classes.
+- **`getAllPermissions()`** reads the direct `permissions` relation *and* each
+  role's, so a resource calling it needs `roles.permissions` **and**
+  `permissions` eager-loaded, or `preventLazyLoading` turns the endpoint into a
+  500.
+- **React 19 lint rules are strict and correct.** Copying external state into
+  React state from an effect, writing a ref during render and calling
+  `Date.now()` during render are all errors. Use `useSyncExternalStore` for
+  browser-only values, assign refs inside effects, and put clock reads in a
+  lazy `useState` initialiser.
+- **Docker `COPY` cannot reach outside the build context** — the PHP services
+  build from the repo root (`context: .`) so they can copy both `backend/` and
+  `docker/php/`.
+- **YAML plain scalars break on a colon**, so
+  `${APP_KEY:?... run: php artisan ...}` failed `docker compose config` until
+  the whole value was quoted.
 
 ---
 
