@@ -53,6 +53,12 @@ interface CartState {
     options: Array<{ group: OptionGroup; option: ProductOption; quantity?: number }>;
     specialInstructions?: string | null;
   }) => void;
+  /**
+   * Adds a line from an already-resolved snapshot rather than a live Product.
+   * Used by "order again", which rebuilds the cart from a past order's items
+   * without re-fetching every product.
+   */
+  addRawLine: (line: Omit<CartLine, "key">) => void;
   setQuantity: (key: string, quantity: number) => void;
   removeLine: (key: string) => void;
   clear: () => void;
@@ -144,6 +150,26 @@ export const useCartStore = create<CartState>()(
               },
             ],
           };
+        });
+      },
+
+      addRawLine: (line) => {
+        const key = lineKey(line.productId, line.options, line.specialInstructions);
+
+        set((state) => {
+          const existing = state.lines.find((candidate) => candidate.key === key);
+
+          if (existing) {
+            return {
+              lines: state.lines.map((candidate) =>
+                candidate.key === key
+                  ? { ...candidate, quantity: Math.min(50, candidate.quantity + line.quantity) }
+                  : candidate,
+              ),
+            };
+          }
+
+          return { lines: [...state.lines, { ...line, key }] };
         });
       },
 

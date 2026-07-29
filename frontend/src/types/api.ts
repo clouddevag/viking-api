@@ -187,6 +187,8 @@ export interface DiningTable {
 
 export interface OrderItemOption {
   id: number;
+  /** Null once the underlying menu option has been deleted. */
+  option_id: number | null;
   group_name: string;
   group_kind: OptionGroupKind;
   name: string;

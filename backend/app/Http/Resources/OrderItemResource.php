@@ -35,6 +35,10 @@ class OrderItemResource extends JsonResource
                 'options',
                 fn () => $this->options->map(fn ($option) => [
                     'id' => $option->id,
+                    // The live option this was snapshotted from, so the client
+                    // can rebuild a cart line for "order again". Null once the
+                    // option has been deleted from the menu.
+                    'option_id' => $option->option_id,
                     'group_name' => $option->group_name,
                     'group_kind' => $option->group_kind->value,
                     'name' => $option->option_name,
