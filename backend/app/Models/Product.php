@@ -199,7 +199,7 @@ class Product extends Model
         return LogOptions::defaults()
             ->logOnly(['name_en', 'name_ar', 'base_price', 'category_id', 'is_active', 'is_available'])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
+            ->dontLogEmptyChanges()
             ->useLogName('product');
     }
 }

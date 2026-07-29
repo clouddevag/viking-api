@@ -88,7 +88,7 @@ class Branch extends Model
         return LogOptions::defaults()
             ->logOnly(['name_en', 'name_ar', 'is_active', 'accepts_delivery', 'delivery_fee'])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
+            ->dontLogEmptyChanges()
             ->useLogName('branch');
     }
 }

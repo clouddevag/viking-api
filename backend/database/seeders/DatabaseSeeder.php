@@ -1,25 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+/**
+ * Order matters: roles must exist before staff can be assigned them, and the
+ * menu must exist before offers and coupons can reference products.
+ *
+ * Every seeder here is idempotent, so `db:seed` can be re-run on an existing
+ * database to pick up new permissions or menu items without duplication.
+ */
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            RolePermissionSeeder::class,
+            SettingsSeeder::class,
+            BranchSeeder::class,
+            StaffSeeder::class,
+            MenuSeeder::class,
+            MarketingSeeder::class,
         ]);
+
+        // Sample traffic for the dashboards. Never in production, where real
+        // orders are the only orders.
+        if (app()->environment(['local', 'testing', 'development'])) {
+            $this->call(DemoOrderSeeder::class);
+        }
     }
 }

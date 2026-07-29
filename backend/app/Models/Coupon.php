@@ -109,7 +109,7 @@ class Coupon extends Model
         return LogOptions::defaults()
             ->logOnly(['code', 'type', 'value', 'is_active', 'usage_limit', 'expires_at'])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
+            ->dontLogEmptyChanges()
             ->useLogName('coupon');
     }
 }

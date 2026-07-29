@@ -85,7 +85,7 @@ class Offer extends Model
         return LogOptions::defaults()
             ->logOnly(['title_en', 'title_ar', 'type', 'is_active', 'starts_at', 'ends_at'])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
+            ->dontLogEmptyChanges()
             ->useLogName('offer');
     }
 }

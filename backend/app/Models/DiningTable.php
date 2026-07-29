@@ -112,7 +112,7 @@ class DiningTable extends Model
         return LogOptions::defaults()
             ->logOnly(['number', 'status', 'is_active', 'branch_id', 'qr_rotated_at'])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
+            ->dontLogEmptyChanges()
             ->useLogName('table');
     }
 }

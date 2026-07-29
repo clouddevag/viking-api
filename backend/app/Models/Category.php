@@ -90,7 +90,7 @@ class Category extends Model
         return LogOptions::defaults()
             ->logOnly(['name_en', 'name_ar', 'parent_id', 'is_active', 'sort_order'])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
+            ->dontLogEmptyChanges()
             ->useLogName('category');
     }
 }
